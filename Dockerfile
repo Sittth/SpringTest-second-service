@@ -3,7 +3,8 @@ WORKDIR /app
 
 COPY . .
 
-RUN chmod +x gradlew
+RUN sed -i 's/\r$//' gradlew && chmod +x gradlew
+
 RUN ./gradlew bootJar --no-daemon --configure-on-demand
 
 FROM eclipse-temurin:21-jre-jammy
