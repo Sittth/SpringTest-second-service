@@ -1,0 +1,114 @@
+openapi: 3.0.3
+info:
+  title: Book Metadata API
+  version: 1.0.0
+
+paths:
+  /book-metadata/{bookId}:
+    get:
+      tags:
+        - BookMetadata
+      summary: Get book metadata by book id
+      operationId: getBookMetadataByBookId
+      parameters:
+        - name: bookId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Metadata found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookMetadataResponse'
+        '404':
+          description: Metadata not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /book-metadata:
+    post:
+      tags:
+        - BookMetadata
+      summary: Create book metadata
+      operationId: createBookMetadata
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookMetadataCreateRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookMetadataResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    BookMetadataResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        bookId:
+          type: string
+          format: uuid
+        publisher:
+          type: string
+        price:
+          type: number
+
+    BookMetadataCreateRequest:
+      type: object
+      required:
+        - bookId
+        - publisher
+        - price
+      properties:
+        bookId:
+          type: string
+          format: uuid
+        publisher:
+          type: string
+          minLength: 1
+          maxLength: 100
+        price:
+          type: number
+          minimum: 0
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        code:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        details:
+          type: array
+          items:
+            type: string
