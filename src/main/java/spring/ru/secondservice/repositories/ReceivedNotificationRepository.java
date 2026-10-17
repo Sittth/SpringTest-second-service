@@ -14,7 +14,7 @@ public interface ReceivedNotificationRepository extends JpaRepository<ReceivedNo
     @Query(value = """
         INSERT INTO test_metadata.received_notifications (notification_id, recipient, message)
         VALUES (:notificationId, :recipient, :message)
-        ON CONFLICT DO NOTHING
+        ON CONFLICT (notification_id) DO NOTHING
     """, nativeQuery = true)
     int insertIfAbsent(@Param("notificationId") UUID notificationId,
                        @Param("recipient") String recipient,
