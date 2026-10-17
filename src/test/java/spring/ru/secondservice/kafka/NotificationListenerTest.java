@@ -130,11 +130,11 @@ class NotificationListenerTest extends AbstractServiceTest {
         assertThat(repository.existsById(id)).isFalse();
     }
 
-    private void send(String key, String payload) throws Exception {
+    void send(String key, String payload) throws Exception {
         kafkaTemplate.send(topic, key, payload).get();
     }
 
-    private String json(UUID id, String recipient, String message) {
+    String json(UUID id, String recipient, String message) {
         return "{\"notificationId\":\"" + id + "\",\"recipient\":\"" + recipient
                 + "\",\"message\":\"" + message + "\"}";
     }
