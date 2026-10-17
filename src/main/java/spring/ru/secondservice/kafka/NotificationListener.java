@@ -24,8 +24,6 @@ public class NotificationListener {
         NotificationEvent notificationEvent = parse(payload);
         validate(notificationEvent);
 
-        log.info("Received notification: {}", payload);
-
         receivedNotificationService.process(notificationEvent);
 
         acknowledgment.acknowledge();
