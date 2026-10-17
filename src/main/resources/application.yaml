@@ -39,3 +39,4 @@ spring:
 notification:
   topic: notifications
   dlt-topic: notifications.DLT
+  topic-replicas: ${NOTIFICATION_TOPIC_REPLICAS:1}

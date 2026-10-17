@@ -16,18 +16,20 @@ import org.apache.kafka.common.TopicPartition;
 public class KafkaConsumerConfig {
 
     @Bean
-    public NewTopic notificationTopic(@Value("${notification.topic}") String name) {
+    public NewTopic notificationTopic(@Value("${notification.topic}") String name,
+                                      @Value("${notification.topic-replicas:1}") int replicas) {
         return TopicBuilder.name(name)
                 .partitions(3)
-                .replicas(1)
+                .replicas(replicas)
                 .build();
     }
 
     @Bean
-    public NewTopic notificationDltTopic(@Value("${notification.dlt-topic}") String name) {
+    public NewTopic notificationDltTopic(@Value("${notification.dlt-topic}") String name,
+                                         @Value("${notification.topic-replicas:1}") int replicas) {
         return TopicBuilder.name(name)
                 .partitions(1)
-                .replicas(1)
+                .replicas(replicas)
                 .build();
     }
 
