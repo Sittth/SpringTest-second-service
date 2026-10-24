@@ -1,7 +1,8 @@
 package spring.ru.secondservice.config;
 
 import org.apache.kafka.clients.admin.NewTopic;
-import org.springframework.beans.factory.annotation.Value;
+import org.apache.kafka.common.TopicPartition;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.TopicBuilder;
@@ -10,35 +11,33 @@ import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.util.backoff.FixedBackOff;
 import spring.ru.secondservice.exceptions.InvalidNotificationException;
-import org.apache.kafka.common.TopicPartition;
 
 @Configuration
+@EnableConfigurationProperties(NotificationTopicProperties.class)
 public class KafkaConsumerConfig {
 
     @Bean
-    public NewTopic notificationTopic(@Value("${notification.topic}") String name,
-                                      @Value("${notification.topic-replicas:1}") int replicas) {
-        return TopicBuilder.name(name)
-                .partitions(3)
-                .replicas(replicas)
+    public NewTopic notificationTopic(NotificationTopicProperties properties) {
+        return TopicBuilder.name(properties.topic())
+                .partitions(properties.topicPartitions())
+                .replicas(properties.topicReplicas())
                 .build();
     }
 
     @Bean
-    public NewTopic notificationDltTopic(@Value("${notification.dlt-topic}") String name,
-                                         @Value("${notification.topic-replicas:1}") int replicas) {
-        return TopicBuilder.name(name)
-                .partitions(1)
-                .replicas(replicas)
+    public NewTopic notificationDltTopic(NotificationTopicProperties properties) {
+        return TopicBuilder.name(properties.dltTopic())
+                .partitions(properties.dltTopicPartitions())
+                .replicas(properties.topicReplicas())
                 .build();
     }
 
     @Bean
     public DefaultErrorHandler kafkaErrorHandler(KafkaTemplate<String, String> kafkaTemplate,
-                                                 @Value("${notification.dlt-topic}") String dltTopic) {
+                                                 NotificationTopicProperties properties) {
 
         DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(kafkaTemplate,
-                (consumerRecord, e) -> new TopicPartition(dltTopic, -1));
+                (consumerRecord, e) -> new TopicPartition(properties.dltTopic(), -1));
 
         FixedBackOff fixedBackOff = new FixedBackOff(2000L, 2L);
 
