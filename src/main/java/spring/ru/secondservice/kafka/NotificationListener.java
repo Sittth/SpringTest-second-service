@@ -15,21 +15,6 @@ import tools.jackson.databind.json.JsonMapper;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validator;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.support.Acknowledgment;
-import org.springframework.stereotype.Component;
-import spring.ru.secondservice.exceptions.InvalidNotificationException;
-import spring.ru.secondservice.kafka.event.NotificationEvent;
-import spring.ru.secondservice.services.ReceivedNotificationService;
-import tools.jackson.databind.json.JsonMapper;
-
-import java.util.Set;
-import java.util.stream.Collectors;
-
 @Slf4j
 @Component
 @RequiredArgsConstructor
