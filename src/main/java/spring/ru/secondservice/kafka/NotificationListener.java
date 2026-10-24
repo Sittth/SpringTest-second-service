@@ -7,8 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
+import spring.ru.secondservice.exceptions.InvalidPayloadException;
 import spring.ru.secondservice.kafka.event.NotificationEvent;
-import spring.ru.secondservice.exceptions.InvalidNotificationException;
 import spring.ru.secondservice.services.ReceivedNotificationService;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -43,13 +43,13 @@ public class NotificationListener {
         try {
             return jsonMapper.readValue(payload, NotificationEvent.class);
         } catch (Exception e) {
-            throw new InvalidNotificationException("Failed to parse JSON into NotificationEvent", e);
+            throw new InvalidPayloadException("Failed to parse JSON into NotificationEvent", e);
         }
     }
 
     private void validate(NotificationEvent event) {
         if (event == null) {
-            throw new InvalidNotificationException("Event is null");
+            throw new InvalidPayloadException("Event is null");
         }
 
         Set<ConstraintViolation<NotificationEvent>> violations = validator.validate(event);
@@ -59,7 +59,7 @@ public class NotificationListener {
                     .map(v -> v.getPropertyPath() + " " + v.getMessage())
                     .sorted()
                     .collect(Collectors.joining(", "));
-            throw new InvalidNotificationException("Invalid notification: " + details);
+            throw new InvalidPayloadException("Invalid notification: " + details);
         }
     }
 }

@@ -10,7 +10,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.util.backoff.FixedBackOff;
-import spring.ru.secondservice.exceptions.InvalidNotificationException;
+import spring.ru.secondservice.exceptions.InvalidPayloadException;
 
 @Configuration
 @EnableConfigurationProperties(NotificationTopicProperties.class)
@@ -44,7 +44,7 @@ public class KafkaConsumerConfig {
         DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer, fixedBackOff);
 
         errorHandler.setCommitRecovered(true);
-        errorHandler.addNotRetryableExceptions(InvalidNotificationException.class);
+        errorHandler.addNotRetryableExceptions(InvalidPayloadException.class);
 
         return errorHandler;
     }
