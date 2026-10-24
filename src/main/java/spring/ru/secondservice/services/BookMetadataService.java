@@ -8,10 +8,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import spring.ru.secondservice.dto.create.BookMetadataCreateRequest;
 import spring.ru.secondservice.dto.response.BookMetadataResponse;
+import spring.ru.secondservice.exceptions.BookMetadataConflictException;
 import spring.ru.secondservice.mapper.BookMetadataMapper;
 import spring.ru.secondservice.models.BookMetadataModel;
 import spring.ru.secondservice.repositories.BookMetadataRepository;
 
+import java.math.RoundingMode;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -19,6 +21,8 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class BookMetadataService {
+
+    private static final int PRICE_SCALE = 2;
 
     private final BookMetadataRepository repository;
     private final BookMetadataMapper bookMetadataMapper;
@@ -41,24 +45,40 @@ public class BookMetadataService {
 
         log.info("Creating book metadata: {}", request);
 
-        Optional<BookMetadataModel> existing = repository.findByIdempotencyKey(idempotencyKey);
-        if (existing.isPresent()) {
-            log.info("Idempotency key {} already processed, returning existing metadata", idempotencyKey);
-            return bookMetadataMapper.toResponse(existing.get());
+        int inserted = repository.insertIfAbsent(
+                request.getBookId(),
+                request.getPublisher(),
+                request.getPrice(),
+                idempotencyKey
+        );
+
+        BookMetadataModel stored = repository.findByIdempotencyKey(idempotencyKey)
+                .orElseThrow(() -> {
+                    log.warn("Book {} already has metadata registered under a different idempotency key",
+                            request.getBookId());
+                    return new BookMetadataConflictException(
+                            "Metadata for book " + request.getBookId()
+                                    + " is already registered under a different idempotency key");
+                });
+
+        if (inserted == 1) {
+            log.info("Saved book metadata with id {}", stored.getId());
+            return bookMetadataMapper.toResponse(stored);
         }
 
-        BookMetadataModel entity = bookMetadataMapper.toEntity(request);
-        entity.setIdempotencyKey(idempotencyKey);
-
-        try {
-            BookMetadataModel saved = repository.save(entity);
-            log.info("Saved book metadata with id {}", saved.getId());
-            return bookMetadataMapper.toResponse(saved);
-        } catch (DataIntegrityViolationException e) {
-            log.warn("Race condition detected for idempotency key {}, fetching existing", idempotencyKey);
-            return repository.findByIdempotencyKey(idempotencyKey)
-                    .map(bookMetadataMapper::toResponse)
-                    .orElseThrow(() -> e);
+        if (!hasSamePayload(stored, request)) {
+            log.warn("Idempotency key {} reused with a different payload", idempotencyKey);
+            throw new BookMetadataConflictException(
+                    "Idempotency key " + idempotencyKey + " was already used with a different request payload");
         }
+
+        log.info("Idempotency key {} already processed, returning existing metadata", idempotencyKey);
+        return bookMetadataMapper.toResponse(stored);
+    }
+
+    private boolean hasSamePayload(BookMetadataModel stored, BookMetadataCreateRequest request) {
+        return stored.getBookId().equals(request.getBookId())
+                && stored.getPublisher().equals(request.getPublisher())
+                && stored.getPrice().compareTo(request.getPrice().setScale(PRICE_SCALE, RoundingMode.HALF_UP)) == 0;
     }
 }
