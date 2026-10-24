@@ -18,11 +18,7 @@ public class ReceivedNotificationService {
     public boolean process(NotificationEvent event) {
         log.info("Received notification with id: {}", event.getNotificationId());
 
-        int inserted = receivedNotificationRepository.insertIfAbsent(
-                event.getNotificationId(),
-                event.getRecipient(),
-                event.getMessage()
-        );
+        int inserted = receivedNotificationRepository.insertIfAbsent(event);
 
         boolean isNew = inserted != 0;
 
