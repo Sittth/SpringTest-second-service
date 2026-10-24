@@ -16,17 +16,17 @@ public class ReceivedNotificationService {
 
     @Transactional
     public boolean process(NotificationEvent event) {
-        log.info("Received notification with id: {}", event.notificationId());
+        log.info("Received notification with id: {}", event.getNotificationId());
 
         int inserted = receivedNotificationRepository.insertIfAbsent(
-                event.notificationId(),
-                event.recipient(),
-                event.message()
+                event.getNotificationId(),
+                event.getRecipient(),
+                event.getMessage()
         );
 
         boolean isNew = inserted != 0;
 
-        log.info("notificationId={}, isNew={}", event.notificationId(), isNew);
+        log.info("notificationId={}, isNew={}", event.getNotificationId(), isNew);
 
         return isNew;
     }

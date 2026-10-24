@@ -144,10 +144,34 @@ tasks.register("generateApi", org.openapitools.generator.gradle.plugin.tasks.Gen
     ]
 }
 
+tasks.register("generateEventDto", org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
+    generatorName = "spring"
+    inputSpec = file("src/main/resources/openapi/api.yaml").toURI().toString()
+    outputDir = "$projectDir/src/generated"
+
+    apiPackage = "spring.ru.secondservice.api"
+    modelPackage = "spring.ru.secondservice.kafka.event"
+
+    globalProperties = [
+            apis: "false",
+            models: "NotificationEvent"
+    ]
+
+    configOptions = [
+            interfaceOnly: "true",
+            hideGenerationTimestamp: "true",
+            useSpringBoot3: "true",
+            useJakartaEe: 'true',
+            useBeanValidation: "true",
+            useResponseEntity: "false"
+    ]
+}
+
 tasks.register("generateAllDto") {
     dependsOn(
             "generateCreateDto",
             "generateResponseDto",
+            "generateEventDto",
             "generateApi"
     )
 }

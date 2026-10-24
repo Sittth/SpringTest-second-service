@@ -7,6 +7,21 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
+import spring.ru.secondservice.kafka.event.NotificationEvent;
+import spring.ru.secondservice.exceptions.InvalidNotificationException;
+import spring.ru.secondservice.services.ReceivedNotificationService;
+import tools.jackson.databind.json.JsonMapper;
+
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.Acknowledgment;
+import org.springframework.stereotype.Component;
 import spring.ru.secondservice.exceptions.InvalidNotificationException;
 import spring.ru.secondservice.kafka.event.NotificationEvent;
 import spring.ru.secondservice.services.ReceivedNotificationService;
@@ -30,13 +45,13 @@ public class NotificationListener {
         NotificationEvent notificationEvent = parse(payload);
         validate(notificationEvent);
 
-        log.info("Received notification with id: {}", notificationEvent.notificationId());
+        log.info("Received notification with id: {}", notificationEvent.getNotificationId());
 
         receivedNotificationService.process(notificationEvent);
 
         acknowledgment.acknowledge();
 
-        log.debug("Notification {} processed and acknowledged", notificationEvent.notificationId());
+        log.debug("Notification {} processed and acknowledged", notificationEvent.getNotificationId());
     }
 
     private NotificationEvent parse(String payload) {

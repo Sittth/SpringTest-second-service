@@ -98,6 +98,23 @@ components:
           type: number
           minimum: 0
 
+    NotificationEvent:
+      type: object
+      required:
+        - notificationId
+        - recipient
+        - message
+      properties:
+        notificationId:
+          type: string
+          format: uuid
+        recipient:
+          type: string
+          pattern: '.*\S.*'
+        message:
+          type: string
+          pattern: '.*\S.*'
+
     ErrorResponse:
       type: object
       properties:
